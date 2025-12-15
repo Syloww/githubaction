@@ -1,0 +1,50 @@
+name: Notification Discord sur push
+
+on:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v4
+
+      - name: Envoyer le push vers Discord
+        env:
+          DISCORD_WEBHOOK_URL: https://discord.com/api/webhooks/1450029402024050778/y44fNKhLAYXdorZgXOwpK7VLyTBb_w8LaKNEEuNIoikUdnx_nuaQxfUkSJcUy66m4A8D
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "Le webhook Discord est manquant (variable DISCORD_WEBHOOK_URL)."
+            exit 1
+          fi
+
+          REPO="$GITHUB_REPOSITORY"
+          BRANCH="$GITHUB_REF_NAME"
+          PUSHER=$(jq -r '.pusher.name // .sender.login // "inconnu"' "$GITHUB_EVENT_PATH")
+          COMMIT_COUNT=$(jq '.commits | length' "$GITHUB_EVENT_PATH")
+          COMMITS=$(jq -r '
+            if (.commits | length) == 0 then
+              "Aucun commit (push vide ou suppression)"
+            else
+              (.commits[] | "- " + (.id[0:7]) + " " + (.message | gsub("\n"; " ")) + " (" + (.author.name // .author.username // "inconnu") + ")")
+            end
+          ' "$GITHUB_EVENT_PATH")
+
+          CONTENT=$(cat <<EOF
+🔔 Push détecté sur **$REPO**
+Branche : $BRANCH
+Pusher : $PUSHER
+Commits ($COMMIT_COUNT) :
+$COMMITS
+Voir : https://github.com/$REPO/commit/${GITHUB_SHA}
+EOF
+)
+
+          curl -sS -H "Content-Type: application/json" \
+            -X POST \
+            -d "$(jq -n --arg content "$CONTENT" '{content:$content}')" \
+            "$DISCORD_WEBHOOK_URL"
+

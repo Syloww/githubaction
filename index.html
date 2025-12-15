@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test GitHub Actions → Discord</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6fb;
+      color: #1f2933;
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    main {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      padding: 32px;
+      max-width: 720px;
+      width: 100%;
+    }
+    h1 {
+      margin-top: 0;
+      color: #1e3a8a;
+    }
+    code {
+      background: #eef2ff;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+    ul {
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Démo GitHub Actions → Discord</h1>
+    <p>Chaque push sur ce dépôt déclenche un workflow qui envoie un message vers un webhook Discord.</p>
+    <ul>
+      <li>URL du webhook (de test) : <code>discord.com/api/webhooks/…</code></li>
+      <li>Message envoyé : dépôt, branche, auteur du push, liste des commits.</li>
+      <li>Fichier du workflow : <code>.github/workflows/discord.yml</code>.</li>
+    </ul>
+    <p>Modifiez ce fichier puis poussez : vous verrez le message arriver côté Discord.</p>
+  </main>
+</body>
+</html>
+
