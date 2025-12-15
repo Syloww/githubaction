@@ -14,15 +14,17 @@ jobs:
 
       - name: Envoyer le push vers Discord
         env:
-          DISCORD_WEBHOOK_URL: https://discord.com/api/webhooks/1450029402024050778/y44fNKhLAYXdorZgXOwpK7VLyTBb_w8LaKNEEuNIoikUdnx_nuaQxfUkSJcUy66m4A8D
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
-          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
-            echo "Le webhook Discord est manquant (variable DISCORD_WEBHOOK_URL)."
+          set -euo pipefail
+
+          if [ -z "${DISCORD_WEBHOOK_URL:-}" ]; then
+            echo "Le webhook Discord est manquant. Ajoutez le secret DISCORD_WEBHOOK_URL dans les settings du dépôt."
             exit 1
           fi
 
-          REPO="$GITHUB_REPOSITORY"
-          BRANCH="$GITHUB_REF_NAME"
+          REPO="${GITHUB_REPOSITORY}"
+          BRANCH="${GITHUB_REF_NAME}"
           PUSHER=$(jq -r '.pusher.name // .sender.login // "inconnu"' "$GITHUB_EVENT_PATH")
           COMMIT_COUNT=$(jq '.commits | length' "$GITHUB_EVENT_PATH")
           COMMITS=$(jq -r '
@@ -33,15 +35,8 @@ jobs:
             end
           ' "$GITHUB_EVENT_PATH")
 
-          CONTENT=$(cat <<EOF
-🔔 Push détecté sur **$REPO**
-Branche : $BRANCH
-Pusher : $PUSHER
-Commits ($COMMIT_COUNT) :
-$COMMITS
-Voir : https://github.com/$REPO/commit/${GITHUB_SHA}
-EOF
-)
+          CONTENT=$(printf "🔔 Push détecté sur **%s**\nBranche : %s\nPusher : %s\nCommits (%s) :\n%s\nVoir : https://github.com/%s/commit/%s" \
+            "$REPO" "$BRANCH" "$PUSHER" "$COMMIT_COUNT" "$COMMITS" "$REPO" "$GITHUB_SHA")
 
           curl -sS -H "Content-Type: application/json" \
             -X POST \
