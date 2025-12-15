@@ -1,19 +1,3 @@
-### Workflow GitHub Actions : Notification Discord
-
-Ce document explique le fonctionnement du fichier `.github/workflows/discord.yml` et les principales variables utilisées.
-
----
-
-### 1. Déclencheur du workflow
-
-- **name** : `Notify Discord`  
-  Nom du workflow, uniquement pour l’interface GitHub.
-
-- **on.push.branches** : `main`  
-  Le workflow se lance à chaque `push` sur la branche `main`.
-
----
-
 ### 2. Job principal
 
 - **jobs.notify.runs-on** : `ubuntu-latest`  
