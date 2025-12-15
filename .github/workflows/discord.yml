@@ -1,45 +1,19 @@
-name: Notification Discord sur push
+name: Notify Discord
 
 on:
   push:
     branches:
-      - "**"
+      - main
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout du dépôt
-        uses: actions/checkout@v4
-
-      - name: Envoyer le push vers Discord
+      - name: Send message to Discord
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
-          set -euo pipefail
-
-          if [ -z "${DISCORD_WEBHOOK_URL:-}" ]; then
-            echo "Le webhook Discord est manquant. Ajoutez le secret DISCORD_WEBHOOK_URL dans les settings du dépôt."
-            exit 1
-          fi
-
-          REPO="${GITHUB_REPOSITORY}"
-          BRANCH="${GITHUB_REF_NAME}"
-          PUSHER=$(jq -r '.pusher.name // .sender.login // "inconnu"' "$GITHUB_EVENT_PATH")
-          COMMIT_COUNT=$(jq '.commits | length' "$GITHUB_EVENT_PATH")
-          COMMITS=$(jq -r '
-            if (.commits | length) == 0 then
-              "Aucun commit (push vide ou suppression)"
-            else
-              (.commits[] | "- " + (.id[0:7]) + " " + (.message | gsub("\n"; " ")) + " (" + (.author.name // .author.username // "inconnu") + ")")
-            end
-          ' "$GITHUB_EVENT_PATH")
-
-          CONTENT=$(printf "🔔 Push détecté sur **%s**\nBranche : %s\nPusher : %s\nCommits (%s) :\n%s\nVoir : https://github.com/%s/commit/%s" \
-            "$REPO" "$BRANCH" "$PUSHER" "$COMMIT_COUNT" "$COMMITS" "$REPO" "$GITHUB_SHA")
-
-          curl -sS -H "Content-Type: application/json" \
-            -X POST \
-            -d "$(jq -n --arg content "$CONTENT" '{content:$content}')" \
-            "$DISCORD_WEBHOOK_URL"
-
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d '{"content": "🚀 Nouveau push sur le dépôt **${{ github.repository }}** (branche main) par **${{ github.actor }}**"}' \
+               "$DISCORD_WEBHOOK"
